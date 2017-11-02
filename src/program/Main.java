@@ -11,6 +11,9 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.event.ActionEvent;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+
 public class Main extends Application {
 
     public static StringBuilder equation = new StringBuilder();
@@ -153,9 +156,11 @@ public class Main extends Application {
         Button plusButton = new Button("+");
         Button minusButton = new Button("-");
         Button multiButton = new Button("*");
+        Button powerButton = new Button("^");
         Button openParButton = new Button ("(");
         Button closedParButton = new Button (")");
         Button equalsButton = new Button ("=");
+        Button clearButton = new Button ("cl");
 
         //positioning operation buttons
         grid.add(divButton, 3,1);
@@ -164,7 +169,10 @@ public class Main extends Application {
         grid.add(multiButton, 1,4);
         grid.add(openParButton, 2,4);
         grid.add(closedParButton, 3,4);
+        grid.add(powerButton,4,3);
         grid.add(equalsButton, 4,4);
+        grid.add(clearButton,4,1);
+
 
         divButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -208,10 +216,46 @@ public class Main extends Application {
                 Main.equation.append(closedParButton.getText());
             }
         });
+        powerButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                screen.appendText(powerButton.getText());
+                Main.equation.append(powerButton.getText());
+            }
+        });
         equalsButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                //DO SHIT HERE TO SOLVE EQUATION
+
+                //replacing karat with format that works for js engine eval
+                for (int i = 0; i < (Main.equation.toString().length());i++){
+                    if(Main.equation.charAt(i) == '^'){
+                        Main.equation.replace((i-1),(i+2),
+                                                "Math.pow("
+                                                    + Main.equation.charAt(i-1) + ","
+                                                    + Main.equation.charAt(i+1) + ")");
+                    }
+                }
+
+                ScriptEngineManager manager = new ScriptEngineManager();
+                ScriptEngine engine = manager.getEngineByName("js");
+                try {
+                    Object result = engine.eval(Main.equation.toString());
+                    screen.clear();
+                    screen.appendText(result.toString());
+
+                    Main.equation.delete(0, Main.equation.length());
+                } catch(javax.script.ScriptException e){
+                    screen.clear();
+                    screen.appendText("Incorrect input");
+                }
+            }
+        });
+        clearButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                screen.clear();
+                Main.equation.delete(0,Main.equation.length());
             }
         });
     }
