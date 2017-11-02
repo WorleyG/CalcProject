@@ -235,6 +235,13 @@ public class Main extends Application {
                                                     + Main.equation.charAt(i-1) + ","
                                                     + Main.equation.charAt(i+1) + ")");
                     }
+                    //checking for an error not caught in javax.script.ScriptException
+                    if(Main.equation.charAt(i) == '/' && Main.equation.charAt(i+1) == '/'){
+                        screen.clear();
+                        screen.appendText("Incorrect input");
+                        Main.equation.delete(0,Main.equation.length());
+                        return;
+                    }
                 }
 
                 ScriptEngineManager manager = new ScriptEngineManager();
@@ -243,11 +250,10 @@ public class Main extends Application {
                     Object result = engine.eval(Main.equation.toString());
                     screen.clear();
                     screen.appendText(result.toString());
-
-                    Main.equation.delete(0, Main.equation.length());
                 } catch(javax.script.ScriptException e){
                     screen.clear();
                     screen.appendText("Incorrect input");
+                    Main.equation.delete(0,Main.equation.length());
                 }
             }
         });
